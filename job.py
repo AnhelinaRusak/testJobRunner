@@ -110,7 +110,7 @@ class Job:
             self.checkout_branch()
             self.build_docker_image()
             self.run_docker_container()
-        except Exception as e:
+        except JobErrorRetry as e:
             log.error(f'Job failed with error {e}')
             job.status = 'Error'
             if job.retry >= 2:
