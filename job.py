@@ -39,8 +39,11 @@ class Job:
 
     @staticmethod
     def run_cmd_from_repository(cmd_command):
+        log.info(f'Running cmd {cmd_command}')
         result = subprocess.run(cmd_command, shell=True, capture_output=True, text=True, cwd=REPOSITORY_PATH)
         if result.returncode != 0:
+            log.info(result.stdout)
+            log.error(result.stderr)
             raise subprocess.CalledProcessError(returncode=result.returncode, cmd=cmd_command, output=result.stdout,
                                                 stderr=result.stderr)
         log.info(result.stdout)
@@ -78,7 +81,6 @@ class Job:
         volumes = "/mnt/n:/mnt/n"
         labels = f'--label logging=promtail --label logging_jobname="{CONTAINER}"'
         cmd_command = f'sudo docker run -it --volume {volumes} {labels} --gpus={GPU_ID} computer_vision {command}'
-        log.info(cmd_command)
         self.run_cmd_from_repository(cmd_command)
 
     def run(self) -> None:
