@@ -108,6 +108,7 @@ class Job:
         self.tools.commit_changes()
         try:
             self.checkout_branch()
+            log.info('HERE0')
             self.build_docker_image()
             log.info('HERE')
             self.run_docker_container()
