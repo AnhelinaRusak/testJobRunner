@@ -72,7 +72,8 @@ class Job:
 
     def run_docker_container(self):
         if self.type == 'training':
-            encoded_bytes = base64.b64encode(self.params['training_object'].encode('utf-8'))
+            json_object = json.dumps(self.params['training_object'])
+            encoded_bytes = base64.b64encode(json_object.encode('utf-8'))
             encoded_string = encoded_bytes.decode('utf-8')
             arguments = [f'--training_object={encoded_string}']
         elif self.params:
