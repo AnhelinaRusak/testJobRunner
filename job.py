@@ -4,8 +4,6 @@ import subprocess
 
 from logger import log
 from database import JobTableTools, JobTable
-from git import Repo
-import docker
 from arguments import args
 
 
@@ -42,6 +40,9 @@ class Job:
     @staticmethod
     def run_cmd_from_repository(cmd_command):
         result = subprocess.run(cmd_command, shell=True, capture_output=True, text=True, cwd=REPOSITORY_PATH)
+        if result.stderr:
+            raise subprocess.CalledProcessError(returncode=result.returncode, cmd=cmd_command, output=result.stdout,
+                                                stderr=result.stderr)
         log.info(result.stdout)
 
     @staticmethod
@@ -63,7 +64,6 @@ class Job:
     def checkout_branch(self):
         self.run_cmd_from_repository('git fetch')
         self.run_cmd_from_repository(f'git checkout {self.branch}')
-        self.run_cmd_from_repository('git fetch')
         self.run_cmd_from_repository('git pull')
 
     def build_docker_image(self):
