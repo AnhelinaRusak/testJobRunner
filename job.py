@@ -96,6 +96,7 @@ class Job:
             self.checkout_branch()
             self.build_docker_image()
             self.run_docker_container()
+            job.status = 'Finished'
         except Exception as e:
             log.error(f'Job failed with error {e}')
             job.status = 'Error'
