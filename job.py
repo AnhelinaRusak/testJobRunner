@@ -98,8 +98,7 @@ class Job:
 
     def build_and_run_docker(self):
         repo = Repo(REPOSITORY_PATH)
-        origin = repo.remotes.origin
-        origin.fetch()
+        repo.git.fetch()
         repo.git.pull()
 
         repo.git.checkout(self.branch)
