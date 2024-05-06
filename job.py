@@ -76,7 +76,7 @@ class Job:
         command = f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(arguments)}"'
         volumes = "/mnt/n:/mnt/n"
         labels = f'--label logging=promtail --label logging_jobname="{CONTAINER}"'
-        cmd_command = f'sudo docker run -it --volume {volumes} {labels} --gpu={GPU_ID} computer_vision {command}'
+        cmd_command = f'sudo docker run -it --volume {volumes} {labels} --gpus={GPU_ID} computer_vision {command}'
         log.info(cmd_command)
         self.run_cmd_from_repository(cmd_command)
 
