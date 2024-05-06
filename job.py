@@ -89,7 +89,7 @@ class Job:
         image_name = 'computer_vision'
         container = client.containers.run(
             image_name,
-            name=CONTAINER,
+            name=f"computer_vision_{GPU_ID}",
             detach=True,
             volumes={'/mnt/n': {'bind': '/mnt/n', 'mode': 'rw'}},
             command=command,
