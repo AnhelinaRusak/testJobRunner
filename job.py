@@ -90,7 +90,7 @@ class Job:
         job = self.tools.get_record(self.uuid)
         job.status = 'In progress'
         job.container = CONTAINER
-        job.machine = MACHINE
+        job.machine = f'DASA-{MACHINE}'
         self.tools.commit_changes()
         try:
             self.checkout_branch()
