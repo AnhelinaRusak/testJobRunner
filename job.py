@@ -81,8 +81,11 @@ class Job:
 
     def run_docker_container(self):
         client = docker.from_env()
-        args = [f"--{key}={value}" for key, value in self.params.items()]
-        command = [f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(args)}"']
+        if self.params:
+            args = [f"--{key}={value}" for key, value in self.params.items()]
+        else:
+            args = []
+        command = [['python3.10', self.path_to_entry_point] + args]
         image_name = 'computer_vision'
         container = client.containers.run(
             image_name,
