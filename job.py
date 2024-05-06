@@ -54,10 +54,8 @@ class Job:
             if isinstance(value, dict):
                 Job.adjust_path_to_os(value)
             elif isinstance(value, str):
-                if value.startswith("N:") and os.name != 'nt':
+                if value.startswith("N:"):
                     dictionary[key] = value.replace("N:", "/mnt/n").replace("\\", "/")
-                elif value.startswith('/mnt/n') and os.name == 'nt':
-                    dictionary[key] = value.replace("/mnt/n", "N:").replace("/", "\\")
         return dictionary
 
     def push_to_db(self) -> None:
