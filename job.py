@@ -71,7 +71,7 @@ class Job:
 
     def run_docker_container(self):
         if self.params:
-            arguments = [f"--{key}={value}" for key, value in self.params.items()]
+            arguments = [f'--{key}="{value}"' for key, value in self.params.items()]
         else:
             arguments = []
         command = f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(arguments)}"'
