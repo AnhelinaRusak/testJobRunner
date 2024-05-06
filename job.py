@@ -92,7 +92,7 @@ class Job:
         volumes = "/mnt/n:/mnt/n"
         labels = f"--labels logging=promtail --labels logging_jobname={CONTAINER}"
 
-        self.run_cmd_from_repository(f'sudo docker run -it computer_vision --name {name} --volumes {volumes} {labels} {command}')
+        self.run_cmd_from_repository(f'sudo docker run -it --name {name} --volumes {volumes} {labels} computer_vision {command}')
         # image_name = 'computer_vision'
         # container = client.containers.run(
         #     image_name,
