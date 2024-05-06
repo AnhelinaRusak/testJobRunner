@@ -85,7 +85,7 @@ class Job:
             args = [f"--{key}={value}" for key, value in self.params.items()]
         else:
             args = []
-        command = [['python3.10', self.path_to_entry_point] + args]
+        command = [f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(args)}"']
         image_name = 'computer_vision'
         container = client.containers.run(
             image_name,
