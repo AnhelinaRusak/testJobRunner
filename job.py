@@ -1,5 +1,5 @@
 import json
-import os
+import base64
 import subprocess
 
 from logger import log
@@ -72,7 +72,9 @@ class Job:
 
     def run_docker_container(self):
         if self.type == 'training':
-            arguments = [f"--{key}='{json.dumps(value)}'" for key, value in self.params.items()]
+            encoded_bytes = base64.b64encode(self.params['training_object'].encode('utf-8'))
+            encoded_string = encoded_bytes.decode('utf-8')
+            arguments = [f'--training_object={encoded_string}']
         elif self.params:
             arguments = [f"--{key}='{value}'" if isinstance(value, str) else f"--{key}={value}" for key, value in self.params.items()]
         else:
