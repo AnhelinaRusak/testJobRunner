@@ -71,7 +71,7 @@ class Job:
         image, build_logs = client.api.build(
             path=REPOSITORY_PATH,
             dockerfile=os.path.join(REPOSITORY_PATH, 'Dockerfile'),
-            tag='ComputerVision:latest',
+            tag='ComputerVisionAI:latest',
         )
 
         for chunk in build_logs:
@@ -83,7 +83,7 @@ class Job:
         client = docker.from_env()
         args = [f"--{key}={value}" for key, value in self.params.items()]
         command = ['python3.10', self.path_to_entry_point] + args
-        image_name = 'ComputerVision'
+        image_name = 'ComputerVisionAI'
         container = client.containers.run(
             image_name,
             name=CONTAINER,
