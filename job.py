@@ -71,7 +71,9 @@ class Job:
         self.run_cmd_from_repository('sudo docker build . -t computer_vision')
 
     def run_docker_container(self):
-        if self.params:
+        if self.type == 'training':
+            arguments = [f"--{key}='{json.dumps(value)}'" for key, value in self.params.items()]
+        elif self.params:
             arguments = [f"--{key}='{value}'" if isinstance(value, str) else f"--{key}={value}" for key, value in self.params.items()]
         else:
             arguments = []
