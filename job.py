@@ -40,7 +40,7 @@ class Job:
     @staticmethod
     def run_cmd_from_repository(cmd_command):
         result = subprocess.run(cmd_command, shell=True, capture_output=True, text=True, cwd=REPOSITORY_PATH)
-        if result.stderr:
+        if result.returncode != 0:
             raise subprocess.CalledProcessError(returncode=result.returncode, cmd=cmd_command, output=result.stdout,
                                                 stderr=result.stderr)
         log.info(result.stdout)
