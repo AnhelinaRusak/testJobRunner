@@ -71,7 +71,7 @@ class Job:
         image, build_logs = client.api.build(
             path=REPOSITORY_PATH,
             dockerfile=os.path.join(REPOSITORY_PATH, 'Dockerfile'),
-            tag='ComputerVision',
+            tag='ComputerVision:latest',
         )
 
         for chunk in build_logs:
