@@ -65,19 +65,19 @@ class Job:
         self.run_cmd_from_repository(f'git checkout {self.branch}')
         self.run_cmd_from_repository('git pull')
 
-    @staticmethod
-    def build_docker_image():
-        client = docker.from_env()
-        build_logs = client.api.build(
-            path=REPOSITORY_PATH,
-            dockerfile=os.path.join(REPOSITORY_PATH, 'Dockerfile'),
-            tag='computer_vision:latest',
-        )
-
-        for chunk in build_logs:
-            if 'stream' in chunk:
-                for line in chunk['stream'].splitlines():
-                    log.info(line)
+    def build_docker_image(self):
+        self.run_cmd_from_repository('sudo docker build . -t computer_vision')
+        # client = docker.from_env()
+        # build_logs = client.api.build(
+        #     path=REPOSITORY_PATH,
+        #     dockerfile=os.path.join(REPOSITORY_PATH, 'Dockerfile'),
+        #     tag='computer_vision:latest',
+        # )
+        #
+        # for chunk in build_logs:
+        #     if 'stream' in chunk:
+        #         for line in chunk['stream'].splitlines():
+        #             log.info(line)
 
     def run_docker_container(self):
         client = docker.from_env()
