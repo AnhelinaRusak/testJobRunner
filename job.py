@@ -80,28 +80,35 @@ class Job:
         #             log.info(line)
 
     def run_docker_container(self):
+
+
         client = docker.from_env()
         if self.params:
             args = [f"--{key}={value}" for key, value in self.params.items()]
         else:
             args = []
-        command = [f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(args)}"']
-        image_name = 'computer_vision'
-        container = client.containers.run(
-            image_name,
-            name=f"computer_vision_{GPU_ID}",
-            detach=True,
-            volumes={'/mnt/n': {'bind': '/mnt/n', 'mode': 'rw'}},
-            command=command,
-            devices=f'/dev/nvidia{GPU_ID}',
-            labels={
-                "logging": "promtail",
-                "logging_jobname": CONTAINER
-            }
-        )
-        container.wait()
-        exit_code = container.attrs['State']['ExitCode']
-        log.info(f"Container exited with exit code: {exit_code}")
+        command = f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(args)}"'
+        name = f"computer_vision_{GPU_ID}"
+        volumes = "/mnt/n:/mnt/n"
+        labels = f"--labels logging=promtail --labels logging_jobname={CONTAINER}"
+
+        self.run_cmd_from_repository(f'sudo docker run -it computer_vision --name {name} --volumes {volumes} {labels} {command}')
+        # image_name = 'computer_vision'
+        # container = client.containers.run(
+        #     image_name,
+        #     name=f"computer_vision_{GPU_ID}",
+        #     detach=True,
+        #     volumes={'/mnt/n': {'bind': '/mnt/n', 'mode': 'rw'}},
+        #     command=command,
+        #     devices=f'/dev/nvidia{GPU_ID}',
+        #     labels={
+        #         "logging": "promtail",
+        #         "logging_jobname": CONTAINER
+        #     }
+        # )
+        # container.wait()
+        # exit_code = container.attrs['State']['ExitCode']
+        # log.info(f"Container exited with exit code: {exit_code}")
 
     def run(self) -> None:
         job = self.tools.get_record(self.uuid)
