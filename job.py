@@ -67,49 +67,18 @@ class Job:
 
     def build_docker_image(self):
         self.run_cmd_from_repository('sudo docker build . -t computer_vision')
-        # client = docker.from_env()
-        # build_logs = client.api.build(
-        #     path=REPOSITORY_PATH,
-        #     dockerfile=os.path.join(REPOSITORY_PATH, 'Dockerfile'),
-        #     tag='computer_vision:latest',
-        # )
-        #
-        # for chunk in build_logs:
-        #     if 'stream' in chunk:
-        #         for line in chunk['stream'].splitlines():
-        #             log.info(line)
 
     def run_docker_container(self):
-
-
-        client = docker.from_env()
         if self.params:
-            args = [f"--{key}={value}" for key, value in self.params.items()]
+            arguments = [f"--{key}={value}" for key, value in self.params.items()]
         else:
-            args = []
-        command = f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(args)}"'
-        name = f"computer_vision_{GPU_ID}"
+            arguments = []
+        command = f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(arguments)}"'
         volumes = "/mnt/n:/mnt/n"
         labels = f'--label logging=promtail --label logging_jobname="{CONTAINER}"'
-        cmd_command = f'sudo docker run -it --volume {volumes} {labels} computer_vision {command}'
+        cmd_command = f'sudo docker run -it --volume {volumes} {labels} --gpu={GPU_ID} computer_vision {command}'
         log.info(cmd_command)
         self.run_cmd_from_repository(cmd_command)
-        # image_name = 'computer_vision'
-        # container = client.containers.run(
-        #     image_name,
-        #     name=f"computer_vision_{GPU_ID}",
-        #     detach=True,
-        #     volumes={'/mnt/n': {'bind': '/mnt/n', 'mode': 'rw'}},
-        #     command=command,
-        #     devices=f'/dev/nvidia{GPU_ID}',
-        #     labels={
-        #         "logging": "promtail",
-        #         "logging_jobname": CONTAINER
-        #     }
-        # )
-        # container.wait()
-        # exit_code = container.attrs['State']['ExitCode']
-        # log.info(f"Container exited with exit code: {exit_code}")
 
     def run(self) -> None:
         job = self.tools.get_record(self.uuid)
@@ -119,12 +88,9 @@ class Job:
         self.tools.commit_changes()
         try:
             self.checkout_branch()
-            log.info('HERE0')
             self.build_docker_image()
-            log.info('HERE')
             self.run_docker_container()
-            log.info('HERE2')
-        except JobErrorRetry as e:
+        except Exception as e:
             log.error(f'Job failed with error {e}')
             job.status = 'Error'
             if job.retry >= 2:
