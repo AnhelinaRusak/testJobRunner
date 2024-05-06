@@ -90,8 +90,8 @@ class Job:
         command = f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(args)}"'
         name = f"computer_vision_{GPU_ID}"
         volumes = "/mnt/n:/mnt/n"
-        labels = f"--labels logging=promtail --labels logging_jobname={CONTAINER}"
-        cmd_command = f'sudo docker run -it --name {name} --volumes {volumes} {labels} computer_vision {command}'
+        labels = f'--label logging=promtail --label logging_jobname="{CONTAINER}"'
+        cmd_command = f'sudo docker run -it --volume {volumes} {labels} computer_vision {command}'
         log.info(cmd_command)
         self.run_cmd_from_repository(cmd_command)
         # image_name = 'computer_vision'
