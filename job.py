@@ -63,6 +63,7 @@ class Job:
     def checkout_branch(self):
         self.run_cmd_from_repository('git fetch')
         self.run_cmd_from_repository(f'git checkout {self.branch}')
+        self.run_cmd_from_repository('git fetch')
         self.run_cmd_from_repository('git pull')
 
     def build_docker_image(self):
