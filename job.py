@@ -1,5 +1,7 @@
 import json
 import os
+import subprocess
+
 from logger import log
 from database import JobTableTools, JobTable
 from git import Repo
@@ -38,6 +40,11 @@ class Job:
         self.tools = JobTableTools()
 
     @staticmethod
+    def run_cmd_from_repository(cmd_command):
+        result = subprocess.run(cmd_command, shell=True, capture_output=True, text=True, cwd=REPOSITORY_PATH)
+        log.info(result.stdout)
+
+    @staticmethod
     def adjust_path_to_os(dictionary: dict) -> dict:
         for key, value in dictionary.items():
             if isinstance(value, dict):
@@ -54,12 +61,9 @@ class Job:
         self.tools.create_record(job)
 
     def checkout_branch(self):
-        repo = Repo(REPOSITORY_PATH)
-        origin = repo.remotes.origin
-        origin.fetch()
-        repo.git.pull()
-
-        repo.git.checkout(self.branch)
+        self.run_cmd_from_repository('git fetch')
+        self.run_cmd_from_repository(f'git checkout {self.branch}')
+        self.run_cmd_from_repository('git pull')
 
     @staticmethod
     def build_docker_image():
@@ -95,13 +99,6 @@ class Job:
         container.wait()
         exit_code = container.attrs['State']['ExitCode']
         log.info(f"Container exited with exit code: {exit_code}")
-
-    def build_and_run_docker(self):
-        repo = Repo(REPOSITORY_PATH)
-        repo.git.fetch()
-        repo.git.pull()
-
-        repo.git.checkout(self.branch)
 
     def run(self) -> None:
         job = self.tools.get_record(self.uuid)
