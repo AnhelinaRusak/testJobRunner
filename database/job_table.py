@@ -1,6 +1,4 @@
-"""
-Module for description of Job table structure.
-"""
+"""Module for description of Job table structure"""
 from sqlalchemy import Column, String, Integer, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 
