@@ -1,4 +1,4 @@
-"""Module for managing DASA Metrics Database"""
+"""Module for managing JobTable in DASA Metrics Database"""
 from typing import Any, Callable
 
 from sqlalchemy import create_engine
@@ -25,10 +25,10 @@ def _commit_changes(func: Callable) -> Callable:
 
 
 class JobTableTools:
-    """Base class for managing DASA Metrics Database"""
+    """Class for managing JobTable in DASA Metrics Database"""
 
     def __init__(self) -> None:
-        """Create DASAMetricsDBTools and initialize session"""
+        """Create JobTableTools and initialize session"""
         credentials = get_credentials('DASAMetricsDB')
         host = credentials['host']
         user = credentials['user']

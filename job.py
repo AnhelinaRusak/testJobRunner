@@ -1,5 +1,6 @@
 import json
 import base64
+import os
 import subprocess
 
 from logger import log
@@ -9,8 +10,8 @@ from arguments import args
 
 REPOSITORY_PATH = args.repository
 GPU_ID = args.gpu
-MACHINE = args.machine
-CONTAINER = f'DASA-{MACHINE} GPU {GPU_ID}'
+MACHINE = f'DASA-{args.machine}'
+CONTAINER = f'{MACHINE} GPU {GPU_ID}'
 
 
 class JobErrorNoRetry(Exception):
@@ -36,6 +37,13 @@ class Job:
         self.path_to_entry_point = path_to_entry_point
         self.params = params
         self.tools = JobTableTools()
+
+    @staticmethod
+    def get_base_docker_run_commend():
+        volumes = 'drive_n' if os.name == 'nt' else "/mnt/n:/mnt/n"
+        labels = f'--label logging=promtail --label logging_jobname="{CONTAINER}"'
+        docker_cmd = 'docker run -it' if os.name == 'nt' else 'sudo docker run -it'
+        return f'{docker_cmd} --volume {volumes} {labels} --gpus={GPU_ID} --shm-size=20gb computer_vision'
 
     @staticmethod
     def run_cmd_from_repository(cmd_command):
@@ -71,26 +79,27 @@ class Job:
         self.run_cmd_from_repository('sudo docker build . -t computer_vision')
 
     def run_docker_container(self):
-        if self.type == 'training':
-            json_object = json.dumps(self.params['training_object'])
-            encoded_bytes = base64.b64encode(json_object.encode('utf-8'))
-            encoded_string = encoded_bytes.decode('utf-8')
-            arguments = [f'--training_object={encoded_string}']
+        if self.type != 'custom':
+            arguments = []
+            for key, value in self.params.items():
+                json_object = json.dumps(value)
+                encoded_bytes = base64.b64encode(json_object.encode('utf-8'))
+                encoded_string = encoded_bytes.decode('utf-8')
+                arguments = [f'--{key}={encoded_string}']
         elif self.params:
-            arguments = [f"--{key}='{value}'" if isinstance(value, str) else f"--{key}={value}" for key, value in self.params.items()]
+            arguments = [f"--{key}='{value}'" if isinstance(value, str) else f"--{key}={value}"
+                         for key, value in self.params.items()]
         else:
             arguments = []
-        command = f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(arguments)}"'
-        volumes = "/mnt/n:/mnt/n"
-        labels = f'--label logging=promtail --label logging_jobname="{CONTAINER}"'
-        cmd_command = f'sudo docker run -it --volume {volumes} {labels} --gpus={GPU_ID} --shm-size=20gb computer_vision {command}'
+        python_command = f'bash -c "python3.10 {self.path_to_entry_point} {" ".join(arguments)}"'
+        cmd_command = f'{self.get_base_docker_run_commend()} {python_command}'
         self.run_cmd_from_repository(cmd_command)
 
     def run(self) -> None:
         job = self.tools.get_record(self.uuid)
         job.status = 'In progress'
         job.container = CONTAINER
-        job.machine = f'DASA-{MACHINE}'
+        job.machine = MACHINE
         self.tools.commit_changes()
         try:
             self.checkout_branch()
