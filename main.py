@@ -1,9 +1,11 @@
 from typing import Any
-from credentials import get_credentials
+
 import pika
-from logger import log
-from job import Job, JobErrorRetry, JobErrorNoRetry
+
 from arguments import args
+from credentials import get_credentials
+from job import Job, JobErrorRetry, JobErrorNoRetry
+from logger import log
 
 
 class RabbitMQListener:

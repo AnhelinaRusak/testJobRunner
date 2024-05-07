@@ -1,12 +1,13 @@
-import json
+"""Module that handles job requests. It fetches changes from repository, checkouts branch, pulling changes,
+building docker from it and then runs docker passing params and entry_point"""
 import base64
+import json
 import os
 import subprocess
 
-from logger import log
-from database import JobTableTools, JobTable
 from arguments import args
-
+from database import JobTableTools, JobTable
+from logger import log
 
 REPOSITORY_PATH = args.repository
 GPU_ID = args.gpu
@@ -29,6 +30,7 @@ class JobErrorRetry(Exception):
 
 
 class Job:
+    """Class that handles job and container"""
     def __init__(self, generated_uuid, branch: str,  job_type: str, path_to_entry_point: str, params: dict | None) \
             -> None:
         self.uuid = generated_uuid
@@ -39,14 +41,15 @@ class Job:
         self.tools = JobTableTools()
 
     @staticmethod
-    def get_base_docker_run_commend():
+    def get_base_docker_run_command():
+        """Get base docker command configuration"""
         volumes = 'drive_n' if os.name == 'nt' else "/mnt/n:/mnt/n"
         labels = f'--label logging=promtail --label logging_jobname="{CONTAINER}"'
         docker_cmd = 'docker run -it' if os.name == 'nt' else 'sudo docker run -it'
-        return f'{docker_cmd} --volume {volumes} {labels} --gpus={GPU_ID} --shm-size=20gb computer_vision'
+        return f'{docker_cmd} --volume {volumes} {labels} --gpus={GPU_ID} --shm-size=20gb computer_vision_{GPU_ID}'
 
     @staticmethod
-    def run_cmd_from_repository(cmd_command):
+    def run_command_from_repository(cmd_command):
         log.info(f'Running cmd {cmd_command}')
         result = subprocess.run(cmd_command, shell=True, capture_output=True, text=True, cwd=REPOSITORY_PATH)
         if result.returncode != 0:
@@ -71,29 +74,29 @@ class Job:
         self.tools.create_record(job)
 
     def checkout_branch(self):
-        self.run_cmd_from_repository('git fetch')
-        self.run_cmd_from_repository(f'git checkout {self.branch}')
-        self.run_cmd_from_repository('git pull')
+        self.run_command_from_repository('git fetch')
+        self.run_command_from_repository(f'git checkout {self.branch}')
+        self.run_command_from_repository('git pull')
 
     def build_docker_image(self):
-        self.run_cmd_from_repository('sudo docker build . -t computer_vision')
+        self.run_command_from_repository(f'sudo docker build . -t computer_vision_{GPU_ID}')
 
     def run_docker_container(self):
+        arguments = []
         if self.type != 'custom':
-            arguments = []
             for key, value in self.params.items():
                 json_object = json.dumps(value)
                 encoded_bytes = base64.b64encode(json_object.encode('utf-8'))
                 encoded_string = encoded_bytes.decode('utf-8')
-                arguments = [f'--{key}={encoded_string}']
+                arguments.append(f'--{key}={encoded_string}')
         elif self.params:
             arguments = [f"--{key}='{value}'" if isinstance(value, str) else f"--{key}={value}"
                          for key, value in self.params.items()]
-        else:
-            arguments = []
-        python_command = f'bash -c "PYTHONPATH=/ComputerVisionAI/src python3.10 {self.path_to_entry_point} {" ".join(arguments)}"'
-        cmd_command = f'{self.get_base_docker_run_commend()} {python_command}'
-        self.run_cmd_from_repository(cmd_command)
+
+        python_command = (f'bash -c "PYTHONPATH=/ComputerVisionAI/src python3.10 {self.path_to_entry_point} '
+                          f'{" ".join(arguments)}"')
+        cmd_command = f'{self.get_base_docker_run_command()} {python_command}'
+        self.run_command_from_repository(cmd_command)
 
     def run(self) -> None:
         job = self.tools.get_record(self.uuid)
@@ -121,5 +124,5 @@ class Job:
         job_dict = cls.adjust_path_to_os(json.loads(message))
         job = cls(job_dict['uuid'], job_dict['branch'], job_dict['type'], job_dict['path_to_entry_point'],
                   job_dict['job'])
-        assert job.type in ['training', 'evaluation', 'custom'], 'Job does not support this type'
+        assert job.type in ['training', 'custom'], 'Job does not support this type'
         return job

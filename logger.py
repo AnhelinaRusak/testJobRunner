@@ -1,8 +1,8 @@
 """Logger configuration."""
 
-from datetime import datetime
 import logging
 import os
+from datetime import datetime
 
 from colorlog import ColoredFormatter
 
@@ -18,7 +18,6 @@ def config_logging(log_directory: str | None = None, level: int = logging.INFO) 
     1. Logging to file, if log_directory is specified. The log is more detailed than printed to screen.
         Log file name includes date and time log creation.
     2. Logging to screen.
-    3. Tensorflow logs - additional information specify module and function called.
     """
     if log_directory is not None:
         os.makedirs(log_directory, exist_ok=True)
@@ -51,15 +50,6 @@ def config_logging(log_directory: str | None = None, level: int = logging.INFO) 
                                  style='%')
     console.setFormatter(formatter)
     log.addHandler(console)
-
-    # Configure tensorflow logger
-    tf_log = logging.getLogger('tensorflow')
-    tf_log.setLevel(level)
-    tf_formatter = ColoredFormatter("%(black)s%(asctime)s TENSORFLOW    module: %(module)s, function: %(funcName)s",
-                                    datefmt='%Y-%m-%d %H:%M:%S',
-                                    style='%')
-    for h in tf_log.handlers:
-        h.setFormatter(tf_formatter)
 
     log.info(f'Configured logger. Logging level: {logging.getLevelName(level)}')
 

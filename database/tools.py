@@ -3,6 +3,7 @@ from typing import Any, Callable
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from credentials import get_credentials
 from logger import log
 from .job_table import JobTable
