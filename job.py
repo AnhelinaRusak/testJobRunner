@@ -91,7 +91,7 @@ class Job:
                          for key, value in self.params.items()]
         else:
             arguments = []
-        python_command = f'bash -c "PYTHONPATH=$PYTHONPATH:/ComputerVisionAI/src python3.10 {self.path_to_entry_point} {" ".join(arguments)}"'
+        python_command = f'bash -c "PYTHONPATH=/ComputerVisionAI/src python3.10 {self.path_to_entry_point} {" ".join(arguments)}"'
         cmd_command = f'{self.get_base_docker_run_commend()} {python_command}'
         self.run_cmd_from_repository(cmd_command)
 
