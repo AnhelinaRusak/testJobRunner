@@ -1,3 +1,4 @@
+"""Module that handles credentials.ini file"""
 import configparser
 
 

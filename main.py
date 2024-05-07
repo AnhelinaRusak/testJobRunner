@@ -1,3 +1,4 @@
+"""Main module, that listens to the queue and receiving messages"""
 from typing import Any
 
 import pika

@@ -1,7 +1,5 @@
 """
 Module for description of Job table structure.
-In case of any changes in tables structure follow the steps, described in documentation:
-https://dtt-it.atlassian.net/wiki/spaces/AIDA/pages/3006628184/Code+Management
 """
 from sqlalchemy import Column, String, Integer, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
